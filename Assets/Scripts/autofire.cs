@@ -10,13 +10,8 @@ public class autofire : MonoBehaviour
     public Animator a2;
     float lf;
     public int cammo = 30;
-    struct enemies
-    {
-        public string name;
-        public int hp;
-        public GameObject body;
-    }
-    List<enemies> ens;
+    public Camera cam;
+    public GameObject scar;
     List<GameObject> getObjectByLayer(int layer)
     {
         UnityEngine.Object[] objects = Resources.FindObjectsOfTypeAll<GameObject>();
@@ -32,19 +27,7 @@ public class autofire : MonoBehaviour
     }
     void Start()
     {
-        int i = 0;
-        List<GameObject> en = getObjectByLayer(10);
-        foreach (GameObject e in en)
-        {
-            if (e.layer == 10)
-            {
-                enemies c = new enemies();
-                c.name = e.name;
-                c.body = e.gameObject;
-                c.hp = 100;
-                ens.Add(c);
-            }
-        }
+
     }
     // Update is called once per frame
     void Update()
@@ -74,21 +57,23 @@ public class autofire : MonoBehaviour
     {
         RaycastHit rc;
         lf = Time.time;
-        Ray ray1 = new Ray(transform.position, transform.forward);
+        Ray ray1 = new Ray(transform.position, transform.right * -1);
+        if (Physics.Raycast(ray1, out rc, 600))
+        {
+            Debug.Log($"Shot fired at {rc.collider.gameObject.name}");
+            Debug.DrawLine(transform.position, transform.right, Color.red, 0.3f);
+            GameObject go = rc.collider.gameObject;
+            if (go.tag == "RUS" || go.tag == "IDF")
+            {
+                Health he = go.GetComponent<Health>();
+                he.health -= 41;
+            }
+            cammo--;
+        }
         a2.SetBool("shooting", true);
         yield return new WaitForSeconds(0.06f);
         a2.SetBool("shooting", false);
         a2.StopPlayback();
         a.Play();
-        if (Physics.Raycast(ray1, out rc))
-        {
-            GameObject go = rc.collider.gameObject;
-            if (go.layer == 10)
-            {
-                enemies e = ens.Find(x => x.name == go.name);
-                e.hp -= 41;
-            }
-            cammo--;
-        }
     }
 }
